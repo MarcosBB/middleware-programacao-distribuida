@@ -3,7 +3,9 @@ package middleware.broker;
 import middleware.lookup.LookupService;
 import middleware.server.ServerRequestHandler;
 
+//import java.rmi.RemoteException;
 
+//import java.io.IOException;
 
 import middleware.invoker.Invoker;
 
@@ -15,7 +17,7 @@ public class Broker {
 
     private final JsonMarshaller marshaller = new JsonMarshaller();
     private final Invoker invoker = new Invoker(lookup, marshaller);
-    private final ServerRequestHandler server = new ServerRequestHandler(invoker, marshaller);
+    private final ServerRequestHandler server = new ServerRequestHandler(invoker);
 
 
     public Broker() {}
