@@ -1,19 +1,10 @@
 package application;
 
-import middleware.annotations.*;
 import middleware.broker.Broker;
 import middleware.server.ServerRequestHandler;
 import middleware.invoker.Invoker;
 import middleware.lookup.LookupService;
 import middleware.marshaller.JsonMarshaller;
-
-@RemoteComponent(name = "Calculator")
-class Calculator {
-    @RemoteMethod(name = "add")
-    public int add(int a, int b) {
-        return a + b;
-    }
-}
 
 public class MainApplication {
     public static void main(String[] args) {
