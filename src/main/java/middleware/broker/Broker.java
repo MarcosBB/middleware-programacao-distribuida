@@ -1,14 +1,7 @@
 package middleware.broker;
-
 import middleware.lookup.LookupService;
 import middleware.server.ServerRequestHandler;
-
-//import java.rmi.RemoteException;
-
-//import java.io.IOException;
-
 import middleware.invoker.Invoker;
-
 import middleware.marshaller.JsonMarshaller;
 
 public class Broker {
@@ -26,8 +19,8 @@ public class Broker {
         server.start();
     }
 
-    public void register(String serviceName, Object service) {
-        lookup.register(serviceName, service);
+    public void register(String serviceName, Class<?> serviceClass) {
+        lookup.register(serviceName, serviceClass);
     }
 
     public LookupService getLookup() {

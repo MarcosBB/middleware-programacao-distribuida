@@ -1,18 +1,19 @@
 package middleware.lifecycle;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.UUID;
 
 public class StaticInstanceManager implements InstanceManager {
-    private final ConcurrentHashMap<Class<?>, Object> instances = new ConcurrentHashMap<>();
-
+    Object instance;
     @Override
-    public Object getInstance(Class<?> clazz, String clientId) throws Exception {
-        return instances.computeIfAbsent(clazz, c -> {
-            try {
-                return c.getDeclaredConstructor().newInstance();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+    public Object getInstance(Class<?> clazz) throws Exception {
+        UUID uuid = UUID.randomUUID();
+
+        if (instance == null) {
+            instance = clazz.getDeclaredConstructor(UUID.class).newInstance(uuid);
+            return instance;
+
+        }else {
+            return instance;
+        }
     }
 }

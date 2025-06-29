@@ -21,8 +21,7 @@ public class AnnotationScanner {
         for (Class<?> clazz : components) {
             try {
                 RemoteComponent comp = clazz.getAnnotation(RemoteComponent.class);
-                Object instance = clazz.getDeclaredConstructor().newInstance();
-                lookup.register(comp.name(), instance);
+                lookup.register(comp.name(), clazz);
 
                 for (Method method : clazz.getDeclaredMethods()) {
                     if (method.isAnnotationPresent(RemoteMethod.class)) {

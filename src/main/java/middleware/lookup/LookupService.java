@@ -3,14 +3,13 @@ package middleware.lookup;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class LookupService {
+    private final ConcurrentHashMap<String, Class<?>> classRegistry = new ConcurrentHashMap<>();
 
-    private final ConcurrentHashMap<String, Object> registry = new ConcurrentHashMap<>();
-
-    public void register(String id, Object object) {
-        registry.put(id, object);
+    public void register(String id, Class<?> clazz) {
+        classRegistry.put(id, clazz);
     }
 
-    public Object getObject(String id) {
-        return registry.get(id);
+    public Class<?> getClass(String className) {
+        return classRegistry.get(className);
     }
 }
