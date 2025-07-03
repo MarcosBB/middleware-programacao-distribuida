@@ -36,8 +36,8 @@ public class ServerRequestHandler {
 
             // Ler a primeira linha do request HTTP
             String requestLine = in.readLine();
-            if (requestLine == null || !requestLine.startsWith("POST /invoke")) {
-                sendResponse(out, 404, "Not Found");
+            if (requestLine == null || requestLine.isEmpty()) {
+                sendResponse(out, 404,  "{\"response\": \"Not Found\"}");
                 return;
             }
 
@@ -59,9 +59,9 @@ public class ServerRequestHandler {
             int statusCode = 200;
 
             try {
-                responseBody = invoker.handleRequest(requestBody);
+                responseBody = invoker.handleRequest(requestBody, requestLine);
             } catch (RemotingError e) {
-                responseBody = "{\"error\": \"" + e.getMessage() + "\"}";
+                responseBody = invoker.errorSerializer(e);
                 statusCode = 500;
             }
 
