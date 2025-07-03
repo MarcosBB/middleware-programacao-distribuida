@@ -26,7 +26,7 @@ public class AnnotationScanner {
                 for (Method method : clazz.getDeclaredMethods()) {
                     if (method.isAnnotationPresent(RemoteMethod.class)) {
                         RemoteMethod rm = method.getAnnotation(RemoteMethod.class);
-                        System.out.printf("Registered: %s.%s()%n", comp.name(), rm.name());
+                        System.out.printf("Registered: %s (%s) ", rm.name(), comp.name());
                     }
                 }
 

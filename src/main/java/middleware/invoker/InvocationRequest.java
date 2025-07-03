@@ -5,6 +5,7 @@ public class InvocationRequest {
     private String method;
     private Object[] parameters;
     private Class<?>[] parameterTypes;
+    private String requestType;
 
     public InvocationRequest() {}
 
@@ -45,5 +46,13 @@ public class InvocationRequest {
 
     public void setParameterTypes(Class<?>[] parameterTypes) {
         this.parameterTypes = parameterTypes;
+    }
+
+    public String getRequestType() {
+        return requestType;
+    }
+
+    public void setRequestType(String requestType) {
+        this.requestType = requestType;
     }
 }

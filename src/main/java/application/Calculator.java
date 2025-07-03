@@ -1,10 +1,12 @@
 package application;
 
 import middleware.annotations.*;
+import middleware.error.RemotingError;
 
+import java.util.Map;
 import java.util.UUID;
 
-@RemoteComponent(name = "Calculator")
+@RemoteComponent(name = "calculator")
 @InstanceScope("PerRequest")
 public class Calculator {
 
@@ -15,24 +17,37 @@ public class Calculator {
         
     }
 
-    @RemoteMethod(name = "add")
-    public String add(int a, int b) {
-        return "ID=" + instanceUUID + ", Resultado=" + (a + b);
+    @RemoteMethod(name = "add", requestType = "POST")
+    public Object add(int a, int b) {
+        return Map.of(
+            "id", instanceUUID,
+            "result", a + b
+        );
     }
 
-    @RemoteMethod(name = "subtract")
-    public int subtract(int a, int b) {
-        return a - b;
+    @RemoteMethod(name = "subtract", requestType = "POST")
+    public Object subtract(int a, int b) {
+        return Map.of(
+            "id", instanceUUID,
+            "result", a - b
+        );
     }
 
-    @RemoteMethod(name = "multiply")
-    public int multiply(int a, int b) {
-        return a * b;
+    @RemoteMethod(name = "multiply", requestType = "POST")
+    public Object multiply(int a, int b) {
+        return Map.of(
+            "id", instanceUUID,
+            "result", a * b
+        );
     }
 
-    @RemoteMethod(name = "divide")
-    public int divide(int a, int b) {
-        if (b == 0) throw new IllegalArgumentException("Division by zero is not allowed.");
-        return a / b;
+    @RemoteMethod(name = "divide", requestType = "POST")
+    public Object divide(int a, int b) throws RemotingError {
+        if (b == 0) throw new RemotingError("Division by zero is not allowed.");
+        return Map.of(
+            "id", instanceUUID,
+            "result", a / b,
+            "remainder", a % b
+        );
     }
 }
