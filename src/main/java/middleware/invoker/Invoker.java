@@ -5,11 +5,14 @@ import middleware.marshaller.JsonMarshaller;
 import middleware.annotations.InstanceScope;
 import middleware.annotations.RemoteMethod;
 import middleware.error.RemotingError;
+import middleware.extension.Interceptor;
+import middleware.extension.InterceptorManager;
 import middleware.lifecycle.InstanceManager;
 import middleware.lifecycle.PerRequestInstanceManager;
 import middleware.lifecycle.StaticInstanceManager;
 
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
 
 public class Invoker {
@@ -25,15 +28,16 @@ public class Invoker {
 
     public String handleRequest(String requestJson, String header) throws RemotingError {
         try {
-            InvocationRequest req = marshaller.deserialize(requestJson, InvocationRequest.class);
+            InvocationRequest context = marshaller.deserialize(requestJson, InvocationRequest.class);
 
-            handleHeader(header, req);
+            handleHeader(header, context);
 
-            Class<?> targetClass = lookup.getClass(req.getObject());
+            Class<?> targetClass = lookup.getClass(context.getObject());
             InstanceManager manager = resolveInstanceManager(targetClass);
             Object obj = manager.getInstance(targetClass);
-            Method method = findMethodByRemoteAnnotation(targetClass, req.getMethod(), req.getRequestType());
-            Object result = method.invoke(obj, req.getParameters());
+            context.setInstance(obj);
+            Method method = findMethodByRemoteAnnotation(targetClass, context.getMethod(), context.getRequestType());
+            Object result = method.invoke(obj, context.getParameters());
             return marshaller.serialize(result);
             
         } catch (Exception e) {
@@ -41,12 +45,12 @@ public class Invoker {
         }
     }
 
-    private void handleHeader(String header, InvocationRequest req) throws RemotingError {
+    private void handleHeader(String header, InvocationRequest context) throws RemotingError {
         String headerParts [] = header.split(" ");
         String requestType = headerParts[0]; // e.g., "POST"
         String requestPath = headerParts[1]; // e.g., "/invoke"
 
-        req.setRequestType(requestType);
+        context.setRequestType(requestType);
 
         if (!requestPath.equals("/invoke")) {
             String requestPathParts [] = requestPath.split("/");
@@ -55,9 +59,26 @@ public class Invoker {
             }
             String serviceName = requestPathParts[1];
             String methodName = requestPathParts[2];
-            req.setObject(serviceName);
-            req.setMethod(methodName);
+            context.setObject(serviceName);
+            context.setMethod(methodName);
         }
+    }
+
+    public Object handleInvocation(InvocationRequest context) throws Exception {
+        Object obj = context.getInstance();
+        Class<?> targetClass = obj.getClass();
+        Method method = findMethodByRemoteAnnotation(targetClass, context.getMethod(), context.getRequestType());
+
+        List<Interceptor> interceptors = InterceptorManager.resolveInterceptors(method);
+
+        for (Interceptor interceptor : interceptors) {
+            interceptor.interceptBefore(context);
+        }
+        Object result = method.invoke(obj, context.getParameters());
+        for (Interceptor interceptor : interceptors.reversed()) {
+            result = interceptor.interceptAfter(context, result);
+        }
+        return result;
     }
 
     public Method findMethodByRemoteAnnotation(Class<?> clazz, String name, String requestType) {

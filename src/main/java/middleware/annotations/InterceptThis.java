@@ -7,6 +7,6 @@ import java.lang.annotation.ElementType;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface IntercepThis {
+public @interface InterceptThis {
     String[] interceptors(); // for global interceptors this annotation is not necessary
 }

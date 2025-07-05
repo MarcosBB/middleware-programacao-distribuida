@@ -14,10 +14,12 @@ public class FormatInterceptor implements Interceptor {
 
     @Override
     public Object interceptAfter(InvocationRequest context, Object result) throws Exception {
-        if (context.getObject().equals("calculator")) {
-            return formatCalculator(context, result);
+        switch (context.getObject()) {
+            case "calculator":
+                return formatCalculator(context, result);
+            default:
+                return result;
         }
-        return result;
     }
 
     @Override
