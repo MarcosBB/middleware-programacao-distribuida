@@ -21,12 +21,12 @@ public class AnnotationScanner {
         for (Class<?> clazz : components) {
             try {
                 RemoteComponent comp = clazz.getAnnotation(RemoteComponent.class);
-                lookup.register(comp.name(), clazz);
+                lookup.register(comp.value(), clazz);
 
                 for (Method method : clazz.getDeclaredMethods()) {
                     if (method.isAnnotationPresent(RemoteMethod.class)) {
                         RemoteMethod rm = method.getAnnotation(RemoteMethod.class);
-                        System.out.printf("Registered: %s (%s) ", rm.name(), comp.name());
+                        System.out.printf("Registered: %s (%s) ", rm.name(), comp.value());
                     }
                 }
 

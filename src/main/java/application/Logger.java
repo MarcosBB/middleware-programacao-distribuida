@@ -10,7 +10,7 @@ import middleware.annotations.RemoteMethod.RequestType;
 import middleware.annotations.InstanceScope.ScopeType;
 
 @InstanceScope(ScopeType.STATIC)
-@RemoteComponent(name = "logger")
+@RemoteComponent("logger")
 public class Logger {
     List<Log> logs;
 
@@ -25,8 +25,13 @@ public class Logger {
         logs.add(log);
     }
 
-    @RemoteMethod(name = "logger", requestType = RequestType.GET)
+    @RemoteMethod(name = "all", requestType = RequestType.GET)
     public List<Log> getLogs() {
-        return new ArrayList<>(logs);
+        return logs;
+    }
+
+    @RemoteMethod(name = "clear", requestType = RequestType.POST)
+    public void clearLogs() {
+        logs.clear();
     }
 }

@@ -6,7 +6,7 @@ import middleware.annotations.RemoteMethod.RequestType;
 
 import java.util.UUID;
 
-@RemoteComponent(name = "calculator")
+@RemoteComponent("calculator")
 @InstanceScope(ScopeType.PER_REQUEST)
 public class Calculator {
 
