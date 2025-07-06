@@ -35,6 +35,7 @@ public class InterceptorManager {
                 interceptors.put(clazz.getSimpleName(), interceptor);
             }
         }
+        System.out.println("Loaded " + interceptors.size() + " interceptors, " + globalInterceptors.size() + " global interceptors.");
     }
 
     public static List<Interceptor> resolveInterceptors(Method method) throws Exception {

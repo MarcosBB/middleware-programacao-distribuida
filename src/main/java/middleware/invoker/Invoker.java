@@ -36,8 +36,7 @@ public class Invoker {
             InstanceManager manager = resolveInstanceManager(targetClass);
             Object obj = manager.getInstance(targetClass);
             context.setInstance(obj);
-            Method method = findMethodByRemoteAnnotation(targetClass, context.getMethod(), context.getRequestType());
-            Object result = method.invoke(obj, context.getParameters());
+            Object result = handleInvocation(context);
             return marshaller.serialize(result);
             
         } catch (Exception e) {
@@ -71,11 +70,11 @@ public class Invoker {
 
         List<Interceptor> interceptors = InterceptorManager.resolveInterceptors(method);
 
-        for (Interceptor interceptor : interceptors) {
+        for (Interceptor interceptor : interceptors.reversed()) {
             interceptor.interceptBefore(context);
         }
         Object result = method.invoke(obj, context.getParameters());
-        for (Interceptor interceptor : interceptors.reversed()) {
+        for (Interceptor interceptor : interceptors) {
             result = interceptor.interceptAfter(context, result);
         }
         return result;

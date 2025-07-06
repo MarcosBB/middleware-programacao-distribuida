@@ -1,5 +1,6 @@
 package application;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import middleware.extension.Interceptor;
@@ -34,10 +35,9 @@ public class FormatInterceptor implements Interceptor {
 
     private Object formatCalculator(InvocationRequest context, Object result) throws Exception {
         Calculator calc = (Calculator) context.getInstance();
-        Map<String,Object> map = Map.of(
-            "id", calc.getUUID(),
-            "result", result
-        );
+        Map<String,Object> map = new HashMap<>();
+        map.put("id", calc.getUUID());
+        map.put("result", result);
         if (context.getMethod().equals("divide")) {
             int mod = calc.remainder((int) context.getParameters()[0], (int) context.getParameters()[1]);
             map.put("remainder", mod);
