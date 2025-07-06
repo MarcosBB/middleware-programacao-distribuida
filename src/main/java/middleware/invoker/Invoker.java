@@ -2,15 +2,12 @@ package middleware.invoker;
 
 import middleware.lookup.LookupService;
 import middleware.marshaller.JsonMarshaller;
-import middleware.annotations.InstanceScope;
 import middleware.annotations.RemoteMethod;
 import middleware.annotations.RemoteMethod.RequestType;
 import middleware.error.RemotingError;
 import middleware.extension.Interceptor;
 import middleware.extension.InterceptorManager;
 import middleware.lifecycle.InstanceManager;
-import middleware.lifecycle.PerRequestInstanceManager;
-import middleware.lifecycle.StaticInstanceManager;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -20,11 +17,12 @@ public class Invoker {
 
     private final LookupService lookup;
     private final JsonMarshaller marshaller;
-    private InstanceManager instanceManager;
+    private final InstanceManager instanceManager;
 
     public Invoker(LookupService lookup, JsonMarshaller marshaller) {
         this.lookup = lookup;
         this.marshaller = marshaller;
+        this.instanceManager = new InstanceManager();
     }
 
     public String handleRequest(String requestJson, String header) throws RemotingError {
@@ -34,13 +32,14 @@ public class Invoker {
             handleHeader(header, context);
 
             Class<?> targetClass = lookup.getClass(context.getObject());
-            InstanceManager manager = resolveInstanceManager(targetClass);
-            Object obj = manager.getInstance(targetClass);
-            context.setInstance(obj);
+            
+            instanceManager.getInstance(targetClass, context, false);
+            
             Object result = handleInvocation(context);
             return marshaller.serialize(result);
             
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RemotingError(e.getMessage());
         }
     }
@@ -89,21 +88,6 @@ public class Invoker {
             }
         }
         return null;
-    }
-
-    private InstanceManager resolveInstanceManager(Class<?> clazz) {
-        if (instanceManager != null) {
-            return instanceManager;
-        }
-        if (clazz.isAnnotationPresent(InstanceScope.class)) {
-            InstanceScope.ScopeType scope = clazz.getAnnotation(InstanceScope.class).value();
-            if (scope == InstanceScope.ScopeType.PER_REQUEST) {
-                instanceManager = new PerRequestInstanceManager();
-                return instanceManager;
-            }
-        }
-        instanceManager = new StaticInstanceManager();
-        return instanceManager; // Default
     }
 
     public final String errorSerializer(Exception error) {

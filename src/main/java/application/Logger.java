@@ -31,7 +31,8 @@ public class Logger {
     }
 
     @RemoteMethod(name = "clear", requestType = RequestType.POST)
-    public void clearLogs() {
+    public String clearLogs() {
         logs.clear();
+        return "Logs cleared successfully.";
     }
 }

@@ -4,17 +4,9 @@ import middleware.annotations.*;
 import middleware.annotations.InstanceScope.ScopeType;
 import middleware.annotations.RemoteMethod.RequestType;
 
-import java.util.UUID;
-
 @RemoteComponent("calculator")
 @InstanceScope(ScopeType.PER_REQUEST)
 public class Calculator {
-
-    private UUID instanceUUID;
-
-    public Calculator(UUID uuid) {
-        instanceUUID = uuid;
-    }
 
     @RemoteMethod(name = "add", requestType = RequestType.POST)
     public int add(int a, int b) {
@@ -43,7 +35,4 @@ public class Calculator {
         return a % b;
     }
 
-    public UUID getUUID() {
-        return instanceUUID;
-    }
 }
