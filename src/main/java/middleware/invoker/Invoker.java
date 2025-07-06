@@ -4,6 +4,7 @@ import middleware.lookup.LookupService;
 import middleware.marshaller.JsonMarshaller;
 import middleware.annotations.InstanceScope;
 import middleware.annotations.RemoteMethod;
+import middleware.annotations.RemoteMethod.RequestType;
 import middleware.error.RemotingError;
 import middleware.extension.Interceptor;
 import middleware.extension.InterceptorManager;
@@ -80,10 +81,10 @@ public class Invoker {
         return result;
     }
 
-    public Method findMethodByRemoteAnnotation(Class<?> clazz, String name, String requestType) {
+    public Method findMethodByRemoteAnnotation(Class<?> clazz, String name, RequestType requestType) {
         for (Method method : clazz.getDeclaredMethods()) {
             RemoteMethod ann = method.getAnnotation(RemoteMethod.class);
-            if (ann != null && ann.name().equals(name) && ann.requestType().equals(requestType)) {
+            if (ann != null && ann.name().equals(name) && ann.requestType() == requestType) {
                 return method;
             }
         }
@@ -95,8 +96,8 @@ public class Invoker {
             return instanceManager;
         }
         if (clazz.isAnnotationPresent(InstanceScope.class)) {
-            String scope = clazz.getAnnotation(InstanceScope.class).value();
-            if ("PerRequest".equalsIgnoreCase(scope)) {
+            InstanceScope.ScopeType scope = clazz.getAnnotation(InstanceScope.class).value();
+            if (scope == InstanceScope.ScopeType.PER_REQUEST) {
                 instanceManager = new PerRequestInstanceManager();
                 return instanceManager;
             }

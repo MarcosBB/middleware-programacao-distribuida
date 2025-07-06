@@ -1,0 +1,32 @@
+package application;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import middleware.annotations.InstanceScope;
+import middleware.annotations.RemoteComponent;
+import middleware.annotations.RemoteMethod;
+import middleware.annotations.RemoteMethod.RequestType;
+import middleware.annotations.InstanceScope.ScopeType;
+
+@InstanceScope(ScopeType.STATIC)
+@RemoteComponent(name = "logger")
+public class Logger {
+    List<Log> logs;
+
+    public Logger() {
+        logs = new ArrayList<>();
+    }
+
+    public void log(Log log) {
+        if (log == null) {
+            throw new IllegalArgumentException("Log message cannot be null.");
+        }
+        logs.add(log);
+    }
+
+    @RemoteMethod(name = "logger", requestType = RequestType.GET)
+    public List<Log> getLogs() {
+        return new ArrayList<>(logs);
+    }
+}

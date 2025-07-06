@@ -1,9 +1,13 @@
 package application;
 
+import middleware.annotations.Inject;
 import middleware.extension.Interceptor;
 import middleware.invoker.InvocationRequest;
 
 public class LoggingInterceptor implements Interceptor {
+
+    @Inject
+    Logger logger;
 
     @Override
     public void interceptBefore(InvocationRequest context) {

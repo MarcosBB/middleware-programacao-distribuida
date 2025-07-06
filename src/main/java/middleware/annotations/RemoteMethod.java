@@ -9,5 +9,12 @@ import java.lang.annotation.ElementType;
 @Target(ElementType.METHOD)
 public @interface RemoteMethod {
     String name();
-    String requestType(); // http request type, e.g., "GET", "POST"
+    RequestType requestType(); // http request type, e.g., "GET", "POST"
+
+    public enum RequestType {
+        GET,
+        POST,
+        PUT,
+        DELETE
+    }
 }

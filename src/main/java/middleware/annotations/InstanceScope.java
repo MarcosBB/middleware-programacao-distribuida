@@ -8,5 +8,12 @@ import java.lang.annotation.RetentionPolicy;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface InstanceScope {
-    String value();
+    ScopeType value();
+
+    public enum ScopeType {
+        STATIC,
+        PER_REQUEST,
+        PER_CLIENT
+    }
+
 }

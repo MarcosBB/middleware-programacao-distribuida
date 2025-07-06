@@ -1,5 +1,7 @@
 package middleware.invoker;
 
+import middleware.annotations.RemoteMethod.RequestType;
+
 /**
  * Represents a invocation context on a request to invoke a method on a remote object.
  * This class encapsulates the details of the invocation, including
@@ -11,21 +13,23 @@ public class InvocationRequest { // InvocationContext
     private String method;
     private Object[] parameters;
     private Class<?>[] parameterTypes;
-    private String requestType;
+    private RequestType requestType;
 
     private String clientIp;
 
     private String requestId;
+    private String clientId;
+
     private Object instance;
 
     public InvocationRequest() {}
 
-    public InvocationRequest(String id, String object, String method, Object[] parameters, Class<?>[] parameterTypes) {
+    public InvocationRequest(String clientid, String object, String method, Object[] parameters, Class<?>[] parameterTypes) {
         this.object = object;
         this.method = method;
         this.parameters = parameters;
         this.parameterTypes = parameterTypes;
-        this.requestId = id;
+        this.clientId = clientid;
     }
 
     public String getObject() {
@@ -60,12 +64,16 @@ public class InvocationRequest { // InvocationContext
         this.parameterTypes = parameterTypes;
     }
 
-    public String getRequestType() {
+    public RequestType getRequestType() {
         return requestType;
     }
 
-    public void setRequestType(String requestType) {
+    public void setRequestType(RequestType requestType) {
         this.requestType = requestType;
+    }
+
+    public void setRequestType(String requestType) {
+        this.requestType = RequestType.valueOf(requestType);
     }
 
     public String getClientIp() {
@@ -82,6 +90,14 @@ public class InvocationRequest { // InvocationContext
 
     public void setInstance(Object instance) {
         this.instance = instance;
+    }
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
     }
 
     public String getRequestId() {
