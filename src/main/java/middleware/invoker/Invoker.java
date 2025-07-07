@@ -25,9 +25,10 @@ public class Invoker {
         this.instanceManager = new InstanceManager();
     }
 
-    public String handleRequest(String requestJson, String header) throws RemotingError {
+    public String handleRequest(String requestJson, String header, String IpAdress) throws RemotingError {
         try {
             InvocationRequest context = marshaller.deserialize(requestJson, InvocationRequest.class);
+            context.setClientIp(IpAdress);
 
             handleHeader(header, context);
 

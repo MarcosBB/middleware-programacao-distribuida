@@ -36,8 +36,8 @@ public class FormatInterceptor implements Interceptor {
     private Object formatCalculator(InvocationRequest context, Object result) throws Exception {
         Calculator calc = (Calculator) context.getInstance();
         Map<String,Object> map = new HashMap<>();
-        map.put("requestid", context.getRequestId());
-        map.put("clientid", context.getClientId());
+        map.put("requestId", context.getRequestId());
+        map.put("clientId", context.getClientId());
         map.put("result", result);
         if (context.getMethod().equals("divide")) {
             int mod = calc.remainder((int) context.getParameters()[0], (int) context.getParameters()[1]);

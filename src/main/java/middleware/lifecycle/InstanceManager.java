@@ -57,17 +57,18 @@ public class InstanceManager {
                 if (remotePerReq == null) {
                     Object obj = targeClass.getDeclaredConstructor().newInstance();
                     remotePerReq = new RemoteInstance(obj);
-                    staticInstances.put(targeClass.getSimpleName(), remotePerReq);
+                    context.setRequestId(remotePerReq.getUUID().toString());
+                    perRequestInstances.put(context.getRequestId(), remotePerReq);
                 }
 
                 if (!isInjection) {
-                    context.setRequestId(remotePerReq.getUUID().toString());
                     context.setInstance(remotePerReq.getInstance());
                 }
                 
                 return remotePerReq.getInstance();
             case PER_CLIENT:
                 Map<String, RemoteInstance> clientInstances = perClientInstances.get(context.getClientId());
+
                 if (clientInstances == null) {
                     clientInstances = new ConcurrentHashMap<>();
                     perClientInstances.put(context.getClientId(), clientInstances);
@@ -76,8 +77,8 @@ public class InstanceManager {
                 RemoteInstance remotePerCli = clientInstances.get(targeClass.getSimpleName());
                 if (remotePerCli == null) {
                     Object obj = targeClass.getDeclaredConstructor().newInstance();
-                    remotePerReq = new RemoteInstance(obj);
-                    staticInstances.put(targeClass.getSimpleName(), remotePerReq);
+                    remotePerCli = new RemoteInstance(obj);
+                    clientInstances.put(targeClass.getSimpleName(), remotePerCli);
                 }
 
                 if (!isInjection) {

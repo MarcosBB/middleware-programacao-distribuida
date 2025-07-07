@@ -24,12 +24,12 @@ public class InvocationRequest { // InvocationContext
 
     public InvocationRequest() {}
 
-    public InvocationRequest(String clientid, String object, String method, Object[] parameters, Class<?>[] parameterTypes) {
+    public InvocationRequest(String clientId, String object, String method, Object[] parameters, Class<?>[] parameterTypes) {
         this.object = object;
         this.method = method;
         this.parameters = parameters;
         this.parameterTypes = parameterTypes;
-        this.clientId = clientid;
+        this.clientId = clientId;
     }
 
     public String getObject() {

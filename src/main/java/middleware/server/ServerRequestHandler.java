@@ -4,6 +4,7 @@ import middleware.invoker.Invoker;
 import middleware.error.RemotingError;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -32,7 +33,9 @@ public class ServerRequestHandler {
 
     private void handleClient(Socket clientSocket) throws RemoteException {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-             OutputStream out = clientSocket.getOutputStream()) {
+            OutputStream out = clientSocket.getOutputStream()) {
+
+            InetAddress clientAddress = clientSocket.getInetAddress();
 
             // Ler a primeira linha do request HTTP
             String requestLine = in.readLine();
@@ -59,7 +62,7 @@ public class ServerRequestHandler {
             int statusCode = 200;
 
             try {
-                responseBody = invoker.handleRequest(requestBody, requestLine);
+                responseBody = invoker.handleRequest(requestBody, requestLine, clientAddress.toString());
             } catch (RemotingError e) {
                 responseBody = invoker.errorSerializer(e);
                 statusCode = 500;
