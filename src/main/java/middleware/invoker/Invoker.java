@@ -68,9 +68,12 @@ public class Invoker {
         Class<?> targetClass = obj.getClass();
         Method method = findMethodByRemoteAnnotation(targetClass, context.getMethod(), context.getRequestType());
 
+        instanceManager.resolveInjection(obj, context);
+
         List<Interceptor> interceptors = InterceptorManager.resolveInterceptors(method);
 
         for (Interceptor interceptor : interceptors.reversed()) {
+            instanceManager.resolveInjection(interceptor, context);
             interceptor.interceptBefore(context);
         }
         Object result = method.invoke(obj, context.getParameters());

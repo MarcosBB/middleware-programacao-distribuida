@@ -1,10 +1,12 @@
 package middleware.lifecycle;
 
 
+import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import middleware.annotations.Inject;
 import middleware.annotations.InstanceScope;
 import middleware.invoker.InvocationRequest;
 
@@ -90,8 +92,14 @@ public class InstanceManager {
     }
 
     public void resolveInjection(Object instance, InvocationRequest context) throws Exception {
-        // Implement logic to resolve injection for the given instance
-        // This could involve checking for annotations and injecting dependencies accordingly
+        Class<?> targetClass = instance.getClass();
+        for (Field field : targetClass.getDeclaredFields()) {
+            if (field.isAnnotationPresent(Inject.class)) {
+                field.setAccessible(true);
+                Object dependency = getInstance(field.getType(), context, true);
+                field.set(instance, dependency);
+                field.setAccessible(false);
+            }
+        } 
     }
-
 }

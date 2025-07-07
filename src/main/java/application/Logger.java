@@ -18,7 +18,7 @@ public class Logger {
         logs = new ArrayList<>();
     }
 
-    public void log(Log log) {
+    public void addLog(Log log) {
         if (log == null) {
             throw new IllegalArgumentException("Log message cannot be null.");
         }
