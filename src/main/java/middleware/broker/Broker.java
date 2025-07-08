@@ -2,6 +2,7 @@ package middleware.broker;
 import middleware.lookup.LookupService;
 import middleware.server.ServerRequestHandler;
 import middleware.invoker.Invoker;
+import middleware.lifecycle.LeasingManager;
 import middleware.marshaller.JsonMarshaller;
 import middleware.annotations.AnnotationScanner;
 
@@ -17,7 +18,10 @@ public class Broker {
     public Broker() {}
 
     public void start() {
+        this.registerAllRemoteComponents();
+        LeasingManager.startLeaseMonitor();
         server.start();
+        LeasingManager.shutdown();
     }
 
     public void register(String serviceName, Class<?> serviceClass) {
