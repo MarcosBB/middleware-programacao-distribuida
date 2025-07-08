@@ -6,6 +6,7 @@ import middleware.annotations.RemoteMethod.RequestType;
 
 @RemoteComponent("calculator")
 @InstanceScope(ScopeType.PER_REQUEST)
+@Poolable()
 public class Calculator {
 
     @InterceptThis(interceptors = {"HistoryInterceptor"})

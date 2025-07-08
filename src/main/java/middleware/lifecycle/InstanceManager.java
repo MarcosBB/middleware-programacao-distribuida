@@ -23,6 +23,9 @@ public class InstanceManager {
     }
 
     public Object getInstance(Class<?> targeClass, InvocationRequest context, boolean isInjection) throws Exception {
+        
+        String pooledId = PoolingManager.poolInstance(targeClass); // null if not poolable
+        
         InstanceScope scope = targeClass.getAnnotation(InstanceScope.class);
         
         if (scope == null) {
@@ -34,62 +37,98 @@ public class InstanceManager {
         }
 
         if (context.getRequestId() == null || context.getRequestId().isEmpty()) {
-            context.setRequestId("");
+            context.setRequestId(UUID.randomUUID().toString());
         }
 
         switch (scope.value()) {
             case STATIC:
-                RemoteInstance remoteStatic = staticInstances.get(targeClass.getSimpleName());
-                if (remoteStatic == null) {
-                    Object obj = targeClass.getDeclaredConstructor().newInstance();
-                    remoteStatic = new RemoteInstance(obj);
-                    staticInstances.put(targeClass.getSimpleName(), remoteStatic);
-                }
+                return getStaticInstance(targeClass, context, isInjection, pooledId);
 
-                if (!isInjection) {
-                    context.setRequestId(remoteStatic.getUUID().toString());
-                    context.setInstance(remoteStatic.getInstance());
-                }
-
-                return remoteStatic.getInstance();
             case PER_REQUEST:
-                RemoteInstance remotePerReq = perRequestInstances.get(context.getRequestId());
-                if (remotePerReq == null) {
-                    Object obj = targeClass.getDeclaredConstructor().newInstance();
-                    remotePerReq = new RemoteInstance(obj);
-                    context.setRequestId(remotePerReq.getUUID().toString());
-                    perRequestInstances.put(context.getRequestId(), remotePerReq);
-                }
+                return getPerRequestInstance(targeClass, context, isInjection, pooledId);
 
-                if (!isInjection) {
-                    context.setInstance(remotePerReq.getInstance());
-                }
-                
-                return remotePerReq.getInstance();
             case PER_CLIENT:
-                Map<String, RemoteInstance> clientInstances = perClientInstances.get(context.getClientId());
+                return getPerClientInstance(targeClass, context, isInjection, pooledId);    
 
-                if (clientInstances == null) {
-                    clientInstances = new ConcurrentHashMap<>();
-                    perClientInstances.put(context.getClientId(), clientInstances);
-                }
-
-                RemoteInstance remotePerCli = clientInstances.get(targeClass.getSimpleName());
-                if (remotePerCli == null) {
-                    Object obj = targeClass.getDeclaredConstructor().newInstance();
-                    remotePerCli = new RemoteInstance(obj);
-                    clientInstances.put(targeClass.getSimpleName(), remotePerCli);
-                }
-
-                if (!isInjection) {
-                    context.setRequestId(remotePerCli.getUUID().toString());
-                    context.setInstance(remotePerCli.getInstance());
-                }
-                
-                return remotePerCli.getInstance();
             default:
                 return null;
         }
+    }
+
+    private Object getStaticInstance(Class<?> targeClass, InvocationRequest context, boolean isInjection, String pooledId) throws Exception {
+        RemoteInstance remote = staticInstances.get(targeClass.getSimpleName());
+        if (remote == null) {
+            Object obj = targeClass.getDeclaredConstructor().newInstance();
+            remote = new RemoteInstance(obj);
+            staticInstances.put(targeClass.getSimpleName(), remote);
+        }
+
+        if (pooledId != null && !pooledId.equals(PoolingManager.NEW_POLLING)) {
+            remote.setUUID(pooledId);
+        }
+
+        if (!isInjection) {
+            context.setRequestId(remote.getUUID().toString());
+            context.setInstance(remote.getInstance());
+        }
+
+        if (pooledId != null) {
+            PoolingManager.addInstance(targeClass, remote.getUUID().toString());
+        }
+
+        return remote.getInstance();
+    }
+
+    private Object getPerRequestInstance(Class<?> targeClass, InvocationRequest context, boolean isInjection, String pooledId) throws Exception {
+        RemoteInstance remote = perRequestInstances.get(pooledId == null ? context.getRequestId() : pooledId);
+        if (remote == null) {
+            Object obj = targeClass.getDeclaredConstructor().newInstance();
+            remote = new RemoteInstance(obj);
+
+            context.setRequestId(remote.getUUID().toString());
+            perRequestInstances.put(context.getRequestId(), remote);
+        }
+
+        if (!isInjection) {
+            context.setInstance(remote.getInstance());
+        }
+
+        if (pooledId != null) {
+            PoolingManager.addInstance(targeClass, remote.getUUID().toString());
+        }
+
+        return remote.getInstance();
+    }
+
+    private Object getPerClientInstance(Class<?> targeClass, InvocationRequest context, boolean isInjection, String pooledId) throws Exception {
+        Map<String, RemoteInstance> clientInstances = perClientInstances.get(context.getClientId());
+
+        if (clientInstances == null) {
+            clientInstances = new ConcurrentHashMap<>();
+            perClientInstances.put(context.getClientId(), clientInstances);
+        }
+
+        RemoteInstance remote = clientInstances.get(targeClass.getSimpleName());
+        if (remote == null) {
+            Object obj = targeClass.getDeclaredConstructor().newInstance();
+            remote = new RemoteInstance(obj);
+            clientInstances.put(targeClass.getSimpleName(), remote);
+        }
+
+        if (pooledId != null && !pooledId.equals(PoolingManager.NEW_POLLING)) {
+            remote.setUUID(pooledId);
+        }
+
+        if (!isInjection) {
+            context.setRequestId(remote.getUUID().toString());
+            context.setInstance(remote.getInstance());
+        }
+
+        if (pooledId != null) {
+            PoolingManager.addInstance(targeClass, remote.getUUID().toString());
+        }
+        
+        return remote.getInstance();
     }
 
     public void resolveInjection(Object instance, InvocationRequest context) throws Exception {
