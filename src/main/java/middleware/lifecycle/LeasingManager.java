@@ -11,20 +11,23 @@ public class LeasingManager {
     private static final Set<RemoteInstance> leasableInstances = ConcurrentHashMap.newKeySet();
 
     private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-    private static final long CHECK_INTERVAL = 3000; // Intervalo para verificar leases expirados
+    private static final long CHECK_INTERVAL = 5000; // Intervalo para verificar leases expirados
 
     public static void registerLeasableInstance(RemoteInstance instance) {
-        if (instance != null && instance.isLeaseExpired()) {
+        if (instance != null && !instance.isLeaseExpired()) {
             leasableInstances.add(instance);
         }
     }
 
     public static void startLeaseMonitor() {
         scheduler.scheduleAtFixedRate(() -> {
-            leasableInstances.forEach(instance -> {
+            leasableInstances.removeIf(instance -> {
+                // System.out.println(instance.toEndLease());
                 if (instance.isLeaseExpired()) {
                     instance.destroy();
+                    return true; // Remove a instância do conjunto
                 }
+                return false; // Mantém a instância no conjunto
             });
         }, 0, CHECK_INTERVAL, TimeUnit.MILLISECONDS); // Começa imediatamente, repete a cada X segundos
     }
@@ -39,7 +42,7 @@ public class LeasingManager {
             scheduler.shutdownNow();
             Thread.currentThread().interrupt();
         }
-        System.out.println("LeasingManager: Scheduler de lease desligado.");
+        System.out.println("Leasing Manager: Scheduler de lease desligado.");
     }
 
 }

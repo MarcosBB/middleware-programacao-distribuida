@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import middleware.annotations.InstanceScope;
+import middleware.annotations.Leasable;
 import middleware.annotations.RemoteComponent;
 import middleware.annotations.RemoteMethod;
 import middleware.annotations.RemoteMethod.RequestType;
@@ -11,6 +12,7 @@ import middleware.annotations.InstanceScope.ScopeType;
 
 @InstanceScope(ScopeType.STATIC)
 @RemoteComponent("logger")
+@Leasable(leaseTime = 60000)
 public class Logger {
     List<Log> logs;
 

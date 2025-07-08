@@ -70,10 +70,7 @@ public class InstanceManager {
             instances.put(remoteId, remote);
             staticInstancesIds.put(targeClass.getSimpleName(), remoteId);
 
-            // remote.destructionCallback = () -> {
-            //     staticInstancesIds.remove(targeClass.getSimpleName());
-            //     instances.remove(remote.getUUIDStr());
-            // };
+            remote.setDestructionCallback(this);
         } else {
             remote = instances.get(remoteId);
         }
@@ -97,9 +94,7 @@ public class InstanceManager {
             context.setRequestId(remote.getUUIDStr());
             instances.put(context.getRequestId(), remote);
 
-            // remote.destructionCallback = () -> {
-            //     instances.remove(remote.getUUIDStr());
-            // };
+            remote.setDestructionCallback(this);
         }
 
         if (!isInjection) {
@@ -134,10 +129,7 @@ public class InstanceManager {
             instances.put(remoteId, remote);
             clientInstances.put(targeClass.getSimpleName(), remoteId);
 
-            // remote.destructionCallback = () -> {
-            //     clientInstances.remove(targeClass.getSimpleName());
-            //     instances.remove(remote.getUUIDStr());
-            // };
+            remote.setDestructionCallback(this);
         } else {
             remote = instances.get(remoteId);
         }
@@ -164,5 +156,13 @@ public class InstanceManager {
                 field.setAccessible(false);
             }
         } 
+    }
+    public void destroyInstance(String instanceId) {
+        RemoteInstance instance = instances.get(instanceId);
+        if (instance != null) {
+            instances.remove(instanceId);
+            staticInstancesIds.values().remove(instanceId);
+            perClientInstancesIds.values().forEach(map -> map.values().remove(instanceId));
+        }
     }
 }

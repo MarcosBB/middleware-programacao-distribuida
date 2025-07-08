@@ -61,18 +61,20 @@ public class RemoteInstance {
     }
 
     public void destroy() {
+        System.out.println("Destroying instance: " + instance.getClass().getSimpleName() + " | " + this.getUUIDStr());
         if (destructionCallback != null) {
             destructionCallback.run();
         }
-        this.instance = null;
     }
 
     private void verifyLease() {
-        Class<?> targetClass = instance.getClass();
+        // System.out.println("Verifying lease for instance of class: " + this.instance.getClass().getSimpleName());
+        Class<?> targetClass = this.instance.getClass();
         if (targetClass.isAnnotationPresent(Leasable.class)) {
             Leasable leasable = targetClass.getAnnotation(Leasable.class);
             this.leaseDuration = leasable.leaseTime();
-            this.lastAccessedTime = System.nanoTime();
+            this.lastAccessedTime = System.currentTimeMillis();
+            // System.out.println("Instance is leasable with duration: " + leaseDuration + " ms");
             LeasingManager.registerLeasableInstance(this);
         } else {
             this.leaseDuration = 0;
@@ -82,7 +84,7 @@ public class RemoteInstance {
 
     private void updateLease() {
         if (this.leaseDuration > 0) {
-            this.lastAccessedTime = System.nanoTime();
+            this.lastAccessedTime = System.currentTimeMillis();
         }
     }
 
@@ -90,7 +92,16 @@ public class RemoteInstance {
         if (leaseDuration <= 0) { // Não é leasable
             return false;
         }
-        return System.currentTimeMillis() - lastAccessedTime > leaseDuration;
+        return (System.currentTimeMillis() - this.lastAccessedTime) > leaseDuration;
     }
 
+    public void setDestructionCallback(InstanceManager manager) {
+        this.destructionCallback = () -> {
+            manager.destroyInstance(this.getUUIDStr());
+        };
+    }
+
+    public String toEndLease() {
+        return instance.getClass().getSimpleName() + " - " + (System.currentTimeMillis() - this.lastAccessedTime) + "ms";
+    }
 }
