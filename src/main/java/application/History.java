@@ -22,8 +22,8 @@ public class History {
         this.history = new ConcurrentHashMap<>();
     }
 
-    @RemoteMethod(name = "getall", requestType = RemoteMethod.RequestType.GET)
-    public List<HistoryEntry> getAll() {
+    @RemoteMethod(name = "listall", requestType = RemoteMethod.RequestType.GET)
+    public List<HistoryEntry> listAll() {
         return history.values().stream().toList();
     }
 
@@ -33,11 +33,20 @@ public class History {
         return "History cleared successfully.";
     }
 
-    public void addEntry(String requestId, Object result, Object context) {
+    public void addEntry(String requestId, Object result, Map<String, Object> context) {
         history.put(requestId, new HistoryEntry(result, context));
     }
 
     public String toString() {
         return history.toString();
     }
+
+    public Map<String, HistoryEntry> getHistory() {
+        return history;
+    }
+
+    public void setHistory(Map<String, HistoryEntry> history) {
+        this.history = history;
+    }
+
 }

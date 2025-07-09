@@ -60,7 +60,7 @@ public class RemoteInstance {
         this.instance = targetClass.getDeclaredConstructor().newInstance();
     }
 
-    public void destroy() {
+    public void destroy() throws Exception {
         System.out.println("Destroying instance: " + instance.getClass().getSimpleName() + " | " + this.getUUIDStr());
         if (destructionCallback != null) {
             destructionCallback.run();
@@ -68,13 +68,11 @@ public class RemoteInstance {
     }
 
     private void verifyLease() {
-        // System.out.println("Verifying lease for instance of class: " + this.instance.getClass().getSimpleName());
         Class<?> targetClass = this.instance.getClass();
         if (targetClass.isAnnotationPresent(Leasable.class)) {
             Leasable leasable = targetClass.getAnnotation(Leasable.class);
             this.leaseDuration = leasable.leaseTime();
             this.lastAccessedTime = System.currentTimeMillis();
-            // System.out.println("Instance is leasable with duration: " + leaseDuration + " ms");
             LeasingManager.registerLeasableInstance(this);
         } else {
             this.leaseDuration = 0;

@@ -19,7 +19,7 @@ public class HistoryInterceptor implements Interceptor {
 
     @Override
     public Object interceptAfter(InvocationRequest context, Object result) throws Exception {
-        Map<String,Object> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
         map.put("object", context.getObject());
         map.put("method", context.getMethod());
         map.put("clientIp", context.getClientIp());

@@ -22,10 +22,14 @@ public class LeasingManager {
     public static void startLeaseMonitor() {
         scheduler.scheduleAtFixedRate(() -> {
             leasableInstances.removeIf(instance -> {
-                // System.out.println(instance.toEndLease());
-                if (instance.isLeaseExpired()) {
-                    instance.destroy();
-                    return true; // Remove a instância do conjunto
+                try {
+                    // System.out.println(instance.toEndLease());
+                    if (instance.isLeaseExpired()) {
+                        instance.destroy();
+                        return true; // Remove a instância do conjunto
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();;
                 }
                 return false; // Mantém a instância no conjunto
             });

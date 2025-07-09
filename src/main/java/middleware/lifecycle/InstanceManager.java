@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import middleware.annotations.Inject;
 import middleware.annotations.InstanceScope;
+import middleware.annotations.Passivable;
 import middleware.invoker.InvocationRequest;
 
 public class InstanceManager {
@@ -73,10 +74,20 @@ public class InstanceManager {
             remote.setDestructionCallback(this);
         } else {
             remote = instances.get(remoteId);
+            if (remote == null) {
+                // object may had been passivated
+                Object obj = PassivationManager.findById(remoteId);
+                if (obj != null) {
+                    remote = new RemoteInstance(obj, remoteId);
+                    remote.setDestructionCallback(this);
+                    
+                    instances.put(remoteId, remote);
+                }
+            }
         }
 
         if (!isInjection) {
-            context.setRequestId(remoteId);
+            // context.setRequestId(remoteId);
             context.setInstance(remote.getInstance());
         }
 
@@ -90,11 +101,21 @@ public class InstanceManager {
     private Object getPerRequestInstance(Class<?> targeClass, InvocationRequest context, boolean isInjection, String pooledId) throws Exception {
         RemoteInstance remote = instances.get(pooledId == null ? context.getRequestId() : pooledId);
         if (remote == null) {
-            remote = new RemoteInstance(targeClass);
-            context.setRequestId(remote.getUUIDStr());
-            instances.put(context.getRequestId(), remote);
 
-            remote.setDestructionCallback(this);
+            // object may had been passivated
+            Object obj = PassivationManager.findById(pooledId == null ? context.getRequestId() : pooledId);
+            if (obj != null) {
+                remote = new RemoteInstance(obj);
+                remote.setDestructionCallback(this);
+
+                instances.put(remote.getUUIDStr(), remote);
+            } else {
+                remote = new RemoteInstance(targeClass);
+                context.setRequestId(remote.getUUIDStr());
+                instances.put(context.getRequestId(), remote);
+
+                remote.setDestructionCallback(this);
+            }
         }
 
         if (!isInjection) {
@@ -132,10 +153,19 @@ public class InstanceManager {
             remote.setDestructionCallback(this);
         } else {
             remote = instances.get(remoteId);
+            if (remote == null) {
+                // object may had been passivated
+                Object obj = PassivationManager.findById(remoteId);
+                if (obj != null) {
+                    remote = new RemoteInstance(obj, remoteId);
+                    remote.setDestructionCallback(this);
+                    instances.put(remoteId, remote);
+                }
+            }
         }
 
         if (!isInjection) {
-            context.setRequestId(remote.getUUIDStr());
+            // context.setRequestId(remote.getUUIDStr());
             context.setInstance(remote.getInstance());
         }
 
@@ -157,12 +187,22 @@ public class InstanceManager {
             }
         } 
     }
+
     public void destroyInstance(String instanceId) {
-        RemoteInstance instance = instances.get(instanceId);
-        if (instance != null) {
+        RemoteInstance remote = instances.get(instanceId);
+        if (remote != null) {
             instances.remove(instanceId);
-            staticInstancesIds.values().remove(instanceId);
-            perClientInstancesIds.values().forEach(map -> map.values().remove(instanceId));
+            Object instance = remote.getInstance();
+            if (instance.getClass().isAnnotationPresent(Passivable.class)) {
+                try {
+                    PassivationManager.save(instanceId, instance);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                staticInstancesIds.values().remove(instanceId);
+                perClientInstancesIds.values().forEach(map -> map.values().remove(instanceId));
+            }
         }
     }
 }
