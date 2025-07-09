@@ -1,5 +1,6 @@
 package middleware.broker;
 import middleware.lookup.LookupService;
+import middleware.server.HttpProtocol;
 import middleware.server.ServerRequestHandler;
 import middleware.invoker.Invoker;
 import middleware.lifecycle.LeasingManager;
@@ -12,7 +13,7 @@ public class Broker {
 
     private final JsonMarshaller marshaller = new JsonMarshaller();
     private final Invoker invoker = new Invoker(lookup, marshaller);
-    private final ServerRequestHandler server = new ServerRequestHandler(invoker);
+    private final ServerRequestHandler server = new ServerRequestHandler(invoker, new HttpProtocol());
     private final AnnotationScanner annotScanner = new AnnotationScanner(lookup);
 
     public Broker() {}

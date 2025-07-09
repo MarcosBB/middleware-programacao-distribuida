@@ -30,7 +30,6 @@ public class JsonMarshaller {
     public void saveToFile(Path filePath, Map<String, JsonFileRepository.RepoEntry> entries) {
         try {
             mapper.writeValue(filePath.toFile(), entries);
-            System.out.println(filePath.toString());
         } catch (Exception e) {
             e.printStackTrace();
         }
