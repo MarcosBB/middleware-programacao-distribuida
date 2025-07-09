@@ -1,11 +1,11 @@
 package middleware.broker;
 import middleware.lookup.LookupService;
-import middleware.server.HttpProtocol;
 import middleware.server.ServerRequestHandler;
 import middleware.invoker.Invoker;
 import middleware.lifecycle.LeasingManager;
 import middleware.marshaller.JsonMarshaller;
 import middleware.annotations.AnnotationScanner;
+import middleware.extension.ProtocolInterface;
 
 public class Broker {
 
@@ -13,10 +13,12 @@ public class Broker {
 
     private final JsonMarshaller marshaller = new JsonMarshaller();
     private final Invoker invoker = new Invoker(lookup, marshaller);
-    private final ServerRequestHandler server = new ServerRequestHandler(invoker, new HttpProtocol());
+    private final ServerRequestHandler server;
     private final AnnotationScanner annotScanner = new AnnotationScanner(lookup);
 
-    public Broker() {}
+    public Broker(ProtocolInterface protocol) {
+        this.server = new ServerRequestHandler(invoker, protocol);
+    }
 
     public void start() {
         this.registerAllRemoteComponents();

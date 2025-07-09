@@ -50,7 +50,9 @@ public class Invoker {
         String requestType = headerParts[0]; // e.g., "POST"
         String requestPath = headerParts[1]; // e.g., "/invoke"
 
-        context.setRequestType(requestType);
+        if (context.getRequestType() == null) {
+            context.setRequestType(requestType);
+        }
 
         if (!requestPath.equals("/invoke")) {
             String requestPathParts [] = requestPath.split("/");

@@ -95,8 +95,6 @@ public class UdpProtocol implements ProtocolInterface {
 
     @Override
     public void closeConection() {
-        if (socket != null && !socket.isClosed()) {
-            socket.close();
-        }
+        return;
     }
 }

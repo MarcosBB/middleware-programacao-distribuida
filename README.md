@@ -111,21 +111,41 @@ A arquitetura interna do middleware segue a implementação dos seguintes padrõ
 
 ### Absolute Object Reference
 
+O AOR é implementado pela classe `AbsoluteObjectReference`, ele representa o endereço absoluto dos objetos dentro dos vários módulos da aplicação distribuída.
+
 ## Lifecycle Management
+
+O ciclo de vida das instâncias de cada tipo de objeto remote é gerenciado pelo `InstanceManager` que encapsula essas instâncias num `RemoteInstace`. Cada entidade remota deve ser anotada com `@InstaceScope(ScopeType)`, onde o valor passado na anotação vai representar o tipo de ciclo de vida da instância daque objeto remoto.
 
 ### Static Instance
 
+O valor da anotação é de `ScopeType.STATIC`, são objetos únicos para todo o ciclo de vida da aplicação.
+
 ### Per-Request Instance
 
+O valor da anotação é de `ScopeType.PER_REQUEST`, são objetos únicos para cada requisição ou invocação.
+
 ### Client-Dependent Instance
+
+O valor da anotação é de `ScopeType.PER_CLIENT`, são objetos únicos para cada cliente dentro do ciclo de vida.
 
 ## Lifecycle Management (continuação)
 
 ### Lazy Acquisition
 
+O `InstanceManager` gerência as instâncias de forma "lazy" por padrão.
+
 ### Pooling
 
+O `PoolingManager` gerência pools que armazenam os índices dos objetos anotados com @Poolable, a anotação defini o número de instâncias de cada pool, quando o `InstaceManager` tiver instânciado essa quantidade de objetos, eles passam a ser reulizados, cada pool funciona em lógica de fila, ou seja, quando um objeto é invocado, seu id irá para o final da fila.
+
+Na nossa aplicação o `Calculator` é anotado como `@Poolable
+
 ### Leasing
+
+O `LeasingManager` gerência as instâncias de cada `RemoteInstace`, verificando a cada período de tempo se alguma delas tem seu lease vencido, após isso elas são destruídas.
+
+Na nossa aplicação o `Logger` e o `History` são anotados como `@Leasable`
 
 ### Passivation
 
@@ -133,6 +153,29 @@ A arquitetura interna do middleware segue a implementação dos seguintes padrõ
 
 ### Invocation Interceptor
 
+O padrão Invocation Interceptor foi desenvolvida a interface `Interceptor`, que precisa ser implementada pelas classe interceptoras, a interface fornece os metodos para interceptar chamadas remotas antes e depois do método ser executado, fornece o índice para ordenação de priorida das intercepções e um variável que verifica que é um interceptor global ou local, interceptores local serão invocados apenas quando os métodos anotados com @IntercepThis("NomeDoInterceptor") forem chamados também.
+
+Os interceptores são gerenciados pelo `InterceptorManager` e chamados diretamente pelo `Invoker` no momento certo.
+
 ### Invocation Context
 
+O padrão Invocation Context é implementado pela classe `InvocationRequest`
+
 ### Protocol Plug-In
+
+Para a implementação do padrão Protocol Plug-in foi criada uma interface `ProtocolInterface`.
+
+Para o `ProtocolInterface` existem duas implementações no Middleware:
+- `HttpProtocol` que é o padrão da aplicação e usa os endpoints mostrados acima;
+- `UdpProtocol` que pode ser usado na mesma lógica do endpoint `/invoke`:
+     ```
+     echo '{
+     "clientId": "4102676a-0f0b-49fb-b6ed-18f0eac64c01",
+     "object": "history",
+     "method": "listall",
+     "parameters": [],
+     "parameterTypes": [],
+     "requestType": "GET"
+     }' | nc -u -w1 localhost 8080 | jq
+     ```
+Isso permite que o usuário possa usar a interface para desenvolver seus proprios protocolos de comunicação, sem passar pela lógica do restando do middleware
