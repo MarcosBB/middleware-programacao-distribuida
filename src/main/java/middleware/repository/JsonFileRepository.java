@@ -14,7 +14,8 @@ import middleware.marshaller.JsonMarshaller;
 
 public class JsonFileRepository implements DataRepository {
 
-    public record RepoEntry(String className, String object) {}
+    public record RepoEntry(String className, String object) {
+    }
 
     private final Path filePath;
     private final JsonMarshaller marshaller;
@@ -26,9 +27,8 @@ public class JsonFileRepository implements DataRepository {
         marshaller = new JsonMarshaller();
         cache = new HashMap<>();
 
-        String userHome = System.getProperty("user.home");
         // Criar um subdiretório para seus dados se desejar
-        Path dataDir = Paths.get(userHome, ".myjavamiddleware", "data");
+        Path dataDir = Paths.get("./myjavamiddleware", "data");
         try {
             Files.createDirectories(dataDir); // Garante que o diretório exista
         } catch (IOException e) {
@@ -40,7 +40,6 @@ public class JsonFileRepository implements DataRepository {
 
     @Override
     public void save(String id, Object obj) {
-        // System.out.println("repo_save: " + obj.getClass().getSimpleName() + " | " + id);
         try {
             readFileToCache();
             RepoEntry entry = new RepoEntry(obj.getClass().getName(), marshaller.serialize(obj));
@@ -56,7 +55,7 @@ public class JsonFileRepository implements DataRepository {
         readFileToCache();
         try {
             RepoEntry entry = cache.get(id);
-            if(entry != null) {
+            if (entry != null) {
                 Class<?> targetClass = Class.forName(entry.className);
                 Object obj = marshaller.deserialize(entry.object, targetClass);
                 return Optional.of(obj);
@@ -98,7 +97,9 @@ public class JsonFileRepository implements DataRepository {
 
     private void readFileToCache() {
         lock.writeLock().lock();
-        cache = marshaller.readFromFile(filePath);
+        if (Files.exists(filePath)) {
+            cache = marshaller.readFromFile(filePath);
+        }
         lock.writeLock().unlock();
     }
 

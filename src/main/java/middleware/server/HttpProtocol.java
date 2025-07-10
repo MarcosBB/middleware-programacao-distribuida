@@ -7,6 +7,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
+import middleware.error.RemotingError;
 import middleware.extension.ProtocolInterface;
 
 public class HttpProtocol implements ProtocolInterface {
@@ -32,16 +33,22 @@ public class HttpProtocol implements ProtocolInterface {
 
     @Override
     public void handleClient() throws Exception {
+
         this.clientSocket = serverSocket.accept();
         BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
         this.ipAddress = clientSocket.getInetAddress().toString();
 
         // Ler a primeira linha do request HTTP
-        this.requestLine = in.readLine();
+        try {
+            this.requestLine = in.readLine();
+        } catch (Exception e) {
+            throw new RemotingError("Failed to connect: " + e.getMessage());
+        }
+        System.out.println("Request Line: " + this.requestLine);
         if (requestLine == null || requestLine.isEmpty()) {
             this.statusCode = 404;
-            throw new IllegalArgumentException("{\"response\": \"Not Found\"}");
+            throw new RemotingError("Request line is empty or null");
         }
 
         // Ler os headers até encontrar uma linha vazia
@@ -67,8 +74,7 @@ public class HttpProtocol implements ProtocolInterface {
             byte[] bodyBytes = responseBody.getBytes(StandardCharsets.UTF_8);
             String statusText = (statusCode == 200) ? "OK" : "Internal Server Error";
 
-            String response =
-                    this.getProtocolType() + " " + statusCode + " " + statusText + "\r\n" +
+            String response = this.getProtocolType() + " " + statusCode + " " + statusText + "\r\n" +
                     "Content-Type: application/json\r\n" +
                     "Content-Length: " + bodyBytes.length + "\r\n" +
                     "Connection: close\r\n" +

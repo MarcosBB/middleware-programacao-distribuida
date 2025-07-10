@@ -29,7 +29,7 @@ public class LeasingManager {
                         return true; // Remove a instância do conjunto
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();;
+                    e.printStackTrace();
                 }
                 return false; // Mantém a instância no conjunto
             });

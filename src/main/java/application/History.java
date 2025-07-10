@@ -17,6 +17,7 @@ import middleware.annotations.InstanceScope.ScopeType;
 @Leasable(leaseTime = 20000)
 public class History {
     private Map<String, HistoryEntry> history;
+    private static final long ENTRIES_LIMIT = 100;
 
     public History() {
         this.history = new ConcurrentHashMap<>();
@@ -34,7 +35,9 @@ public class History {
     }
 
     public void addEntry(String requestId, Object result, Map<String, Object> context) {
-        history.put(requestId, new HistoryEntry(result, context));
+        if (this.history.size() <= ENTRIES_LIMIT) {
+            history.put(requestId, new HistoryEntry(result, context));
+        }
     }
 
     public String toString() {

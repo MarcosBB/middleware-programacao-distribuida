@@ -31,3 +31,5 @@ target/
 
 # vsCode files
 .vscode/
+
+myjavamiddleware/*
